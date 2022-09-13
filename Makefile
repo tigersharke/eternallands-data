@@ -2,7 +2,7 @@ PORTNAME=	Eternal-Lands-data
 DISTVERSION=	1.9.6.1
 CATEGORIES=	games
 MASTER_SITES=	https://github.com/raduprv/Eternal-Lands/releases/download/${DISTVERSION}/
-DISTFILES=	${EL_DATA}
+DISTFILES=	eternallands-data_${DISTVERSION}${EXTRACT_SUFX}
 DIST_SUBDIR=	${PORTNAME}
 
 MAINTAINER=	acm@FreeBSD.org
@@ -18,7 +18,6 @@ DOS2UNIX_WRKSRC= ${WRKSRC}/el_data
 CONFLICTS=      el-data
 DATADIR=	${PREFIX}/share/${PORTNAME}
 WRKSRC=		${WRKDIR}/${PORTNAME}-${DISTVERSION}
-EL_DATA=	eternallands-data_${DISTVERSION}${EXTRACT_SUFX}
 # https://github.com/raduprv/Eternal-Lands/releases/download/1.9.6.1/eternallands-data_1.9.6.1.zip
 # pkg will complain about duplicate plist entries if portdata is used, prefer proper pkg-plist instead.
 #PORTDATA=	*
@@ -40,26 +39,20 @@ DISTFILES+=	eternallands-music_1.9.5.9${EXTRACT_SUFX}
 .endif
 
 do-extract:
-	@${UNZIP_CMD} -q ${_DISTDIR}/${EL_DATA} -d ${WRKSRC}
+	@${UNZIP_CMD} -q ${_DISTDIR}/eternallands-data_${DISTVERSION}${EXTRACT_SUFX} -d ${WRKSRC}
+	# The data files have their own directory, el_data which is created upon extract.
 .if ${PORT_OPTIONS:MELSOUND}
-	@${UNZIP_CMD} -q ${_DISTDIR}/eternallands-sound_${DISTVERSION}${EXTRACT_SUFX} -d ${WRKSRC}
+	@${UNZIP_CMD} -q ${_DISTDIR}/eternallands-sound_${DISTVERSION}${EXTRACT_SUFX} -d ${WRKSRC}/el_data
+	# Sound has its own directory which is created upon extract.
 .endif
 .if ${PORT_OPTIONS:MELMUSIC}
-	@${MKDIR} ${WRKSRC}/music
-	@${UNZIP_CMD} -q ${_DISTDIR}/eternallands-music_1.9.5.9${EXTRACT_SUFX} -d ${WRKSRC}/music
+	@${MKDIR} ${WRKSRC}/el_data/music
+	@${UNZIP_CMD} -q ${_DISTDIR}/eternallands-music_1.9.5.9${EXTRACT_SUFX} -d ${WRKSRC}/el_data/music
 .endif
 
-post-extract:
-	@${FIND} ${WRKSRC} -type d -name CVS -print0 | \
-		${XARGS} -0 ${RM} -R
-	@${FIND} ${WRKSRC} -type f -name "*.dll" -print0 | \
-		${XARGS} -0 ${RM} -R
-	@${FIND} ${WRKSRC} -type f -name "*.exe" -print0 | \
-		${XARGS} -0 ${RM} -R
-	@${FIND} ${WRKSRC} -type f -name "*.bin" -print0 | \
-		${XARGS} -0 ${RM} -R
-
 do-install:
-	cd ${WRKSRC} && ${COPYTREE_SHARE} . ${STAGEDIR}${DATADIR}
+	cd ${WRKSRC}/el_data && ${COPYTREE_SHARE} . ${STAGEDIR}${DATADIR}
+#
+# The music and sounds need to be directories inside of the path defined for the el_data files.
 
 .include <bsd.port.mk>
