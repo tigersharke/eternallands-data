@@ -11,15 +11,17 @@ COMMENT=	Eternal Lands data, sound, and music files
 NO_ARCH=	yes
 NO_BUILD=	yes
 USES=		dos2unix zip:infozip
-DOS2UNIX_GLOB=	*.ini *.txt
+DOS2UNIX_GLOB=	*.ini *.lst *.txt *.xml
+DOS2UNIX_WRKSRC= ${WRKSRC}/el_data
+# Note that dos2unix occurs before other patches.
 
 CONFLICTS=      el-data
 DATADIR=	${PREFIX}/share/${PORTNAME}
-WRKSRC=		${WRKDIR}/${PORTNAME}
+WRKSRC=		${WRKDIR}/${PORTNAME}-${DISTVERSION}
 EL_DATA=	eternallands-data_${DISTVERSION}${EXTRACT_SUFX}
 # https://github.com/raduprv/Eternal-Lands/releases/download/1.9.6.1/eternallands-data_1.9.6.1.zip
-
-PORTDATA=	*
+# pkg will complain about duplicate plist entries if portdata is used, prefer proper pkg-plist instead.
+#PORTDATA=	*
 
 OPTIONS_DEFINE=		ELSOUND ELMUSIC
 OPTIONS_DEFAULT=	ELSOUND ELMUSIC
@@ -38,8 +40,7 @@ DISTFILES+=	eternallands-music_1.9.5.9${EXTRACT_SUFX}
 .endif
 
 do-extract:
-	@${MKDIR} ${WRKSRC}
-	@${UNZIP_CMD} -q ${_DISTDIR}/${EL_DATA} -d ${WRKDIR}
+	@${UNZIP_CMD} -q ${_DISTDIR}/${EL_DATA} -d ${WRKSRC}
 .if ${PORT_OPTIONS:MELSOUND}
 	@${UNZIP_CMD} -q ${_DISTDIR}/eternallands-sound_${DISTVERSION}${EXTRACT_SUFX} -d ${WRKSRC}
 .endif
